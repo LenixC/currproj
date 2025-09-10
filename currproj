@@ -3,6 +3,15 @@
 CONFIG_FILE="$HOME/.currproj_dir"
 SESSION="currproj"
 
+# If -h is given, print help
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    echo "Usage: $0 [-n new_directory] [extensions...]"
+    echo "  -n DIR    Set new project directory"
+    echo "  EXT       File extensions to open (e.g., py js)"
+    echo "  (no args) Open all files in current project directory"
+    exit 0
+fi
+
 # Ensure config file exists with a default (change as you like)
 if [[ ! -f "$CONFIG_FILE" ]]; then
     echo "$HOME" > "$CONFIG_FILE"
