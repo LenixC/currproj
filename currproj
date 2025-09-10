@@ -1,0 +1,62 @@
+#!/bin/bash
+
+CONFIG_FILE="$HOME/.currproj_dir"
+SESSION="currproj"
+
+# Ensure config file exists with a default (change as you like)
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "$HOME" > "$CONFIG_FILE"
+fi
+
+# Parse args
+NEW_DIR=""
+EXTS=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -n)
+            shift
+            NEW_DIR="$1"
+            ;;
+        *)
+            EXTS+=("$1")
+            ;;
+    esac
+    shift
+done
+
+# If -n is given, update config
+if [[ -n "$NEW_DIR" ]]; then
+    PROJECT_DIR="$(realpath "$NEW_DIR")"
+    echo "$PROJECT_DIR" > "$CONFIG_FILE"
+else
+    PROJECT_DIR="$(cat "$CONFIG_FILE")"
+fi
+
+cd "$PROJECT_DIR" || { echo "Directory not found: $PROJECT_DIR"; exit 1; }
+
+# Build file list
+if [[ ${#EXTS[@]} -gt 0 ]]; then
+    files=()
+    for ext in "${EXTS[@]}"; do
+        files+=( "$PROJECT_DIR"/*."$ext" )
+    done
+else
+    files=( "$PROJECT_DIR"/* )
+fi
+
+# Filter out non-existent matches
+to_open=()
+for f in "${files[@]}"; do
+    [[ -f "$f" ]] && to_open+=("$f")
+done
+
+# Start tmux session
+tmux has-session -t $SESSION 2>/dev/null
+if [[ $? != 0 ]]; then
+    tmux new-session -d -s $SESSION
+    tmux split-window -v -t $SESSION
+    tmux send-keys -t $SESSION:0.0 "nvim -p ${to_open[*]}" C-m
+fi
+
+tmux attach -t $SESSION
