@@ -56,7 +56,7 @@ tmux has-session -t $SESSION 2>/dev/null
 if [[ $? != 0 ]]; then
     tmux new-session -d -s $SESSION
     tmux split-window -v -t $SESSION
-    tmux send-keys -t $SESSION:0.0 "nvim -p ${to_open[*]}" C-m
+    tmux send-keys -t $SESSION:0.0 "nvim -p ${to_open[*]@Q}" C-m
 fi
 
 tmux attach -t $SESSION
